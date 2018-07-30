@@ -70,7 +70,7 @@ contract Voting {
 
   function totalTokensUsed(uint[] _tokensUsedPerCandidate) private pure returns (uint) {
     uint totalUsedTokens = 0;
-    for(uint i=0; i<_tokensUsedPerCandidate.length; i++) {
+    for(uint i = 0; i < _tokensUsedPerCandidate.length; i++) {
       totalUsedTokens += _tokensUsedPerCandidate[i];
     }
     return totalUsedTokens;
