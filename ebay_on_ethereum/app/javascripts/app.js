@@ -12,32 +12,66 @@ import ecommerce_store_artifacts from '../../build/contracts/EcommerceStore.json
 const EcommerceStore = contract(ecommerce_store_artifacts);
 
 window.App = {
-  start: function () {
+  start: function() {
     const self = this;
 
     // Bootstrap the MetaCoin abstraction for Use.
     EcommerceStore.setProvider(web3.currentProvider);
-    renderStore();
+    if ($('#product-details').length > 0) {
+      const productId = new URLSearchParams(window.location.search).get('id');
+      renderProductDetail(productId);
+    } else {
+      renderStore();
+    }
 
-    $('#add-item-to-store').submit(function (event) {
+    $('#add-item-to-store').submit(function(event) {
       const req = $('#add-item-to-store').serialize();
       const params = JSON.parse('{"' + req.replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g, '":"') + '"}');
       let decodedParams = {};
-      Object.keys(params).forEach(function (v) {
+      Object.keys(params).forEach(function(v) {
         decodedParams[v] = decodeURIComponent(decodeURI(params[v]));
       });
-      console.log(req, decodedParams);
       saveProduct(decodedParams);
       event.preventDefault();
+    });
+
+    $('#buy-now').submit(function(event) {
+      event.preventDefault();
+      $('#msg').hide();
+      const amount = $('#buy-now-price').val();
+      const productId = $('#product-id').val();
+      return EcommerceStore.deployed().then(function(instance) {
+        return instance.buy(productId, {
+          from: web3.eth.accounts[0],
+          value: amount,
+          gas: 470000
+        });
+      }).then(function() {
+        $('#msg').show();
+        $('#msg').html('You have purchased this product successfully!');
+      });
     });
   }
 };
 
+/* Product detail page's functions */
+// Render detail of product
+function renderProductDetail(productId) {
+  return EcommerceStore.deployed().then(function(instance) {
+    return instance.getProduct.call(productId).then(function(product) {
+      $('#product-name').html(product[1]);
+      $('#product-price').html(displayPrice(product[6]));
+      $('#product-id').val(product[0]);
+      $('#buy-now-price').val(product[6]);
+    });
+  });
+}
+/* End product detail page's functions */
+
+/* New product page's functions */
 // Save product to blockchain
-function saveProduct (params) {
-  let instance;
-  return EcommerceStore.deployed().then(function (i) {
-    instance = i;
+function saveProduct(params) {
+  return EcommerceStore.deployed().then(function(instance) {
     return instance.addProductToStore(
       params['product-name'], params['product-category'], 'imageLink', 'descLink',
       Date.parse(params['product-start-time']) / 1000,
@@ -45,18 +79,20 @@ function saveProduct (params) {
       params['product-condition'],
       { from: web3.eth.accounts[0], gas: 4700000 },
     );
-  }).then(function (result) {
-    console.log(result);
+  }).then(function(result) {
+    window.alert('You have added new product successfully');
   });
 }
+/* End new product page's functions */
 
+/* Index page's functions */
 // Get products
-function renderStore () {
+function renderStore() {
   let instance;
-  return EcommerceStore.deployed().then(function (i) {
+  return EcommerceStore.deployed().then(function(i) {
     instance = i;
     return instance.productIndex.call();
-  }).then(function (productIndex) {
+  }).then(function(productIndex) {
     for (let index = 0; index < productIndex; index++) {
       renderProduct(instance, index + 1);
     }
@@ -64,12 +100,13 @@ function renderStore () {
 }
 
 // Render product to UI
-function renderProduct (instance, index) {
-  return instance.getProduct.call(index).then(function (product) {
+function renderProduct(instance, index) {
+  return instance.getProduct.call(index).then(function(product) {
     const node = $('<div />');
     node.addClass('col-sm-3 text-center col-margin-bottom-1 product');
     node.append('<div class="title">' + product[1] + '</div>');
     node.append('<div> Price: ' + displayPrice(product[6]) + '</div>');
+    node.append('<a href="product.html?id=' + product[0] + '">Details</a>');
     if (product[8] === '0x0000000000000000000000000000000000000000') {
       $('#product-list').append(node);
     } else {
@@ -77,12 +114,13 @@ function renderProduct (instance, index) {
     }
   });
 }
+/* End index page's functions */
 
-function displayPrice (price) {
+function displayPrice(price) {
   return '&Xi;' + web3.fromWei(price, 'ether');
 }
 
-window.addEventListener('load', function () {
+window.addEventListener('load', function() {
   // Checking if Web3 has been injected by the browser (Mist/MetaMask)
   if (typeof web3 !== 'undefined') {
     console.warn('Using web3 detected from external source. ' +
