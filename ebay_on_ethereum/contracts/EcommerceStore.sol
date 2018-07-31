@@ -25,6 +25,11 @@ contract EcommerceStore {
         address buyer;
     }
 
+    event NewProduct(
+        uint id, string name, string category, string imageLink, string descLink,
+        uint startTime, uint price, uint condition
+    );
+
     constructor(address _arbiter) public {
         productIndex = 0;
         arbiter = _arbiter;
@@ -43,6 +48,10 @@ contract EcommerceStore {
         );
         stores[msg.sender][productIndex] = product;
         productIdInStore[productIndex] = msg.sender;
+        emit NewProduct(
+            productIndex, _name, _category, _imageLink, _descLink,
+            _startTime, _price, _productCondition
+        );
     }
 
     // Get a product by id

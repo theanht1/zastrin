@@ -28,6 +28,7 @@
     "eslint-plugin-standard": "^2.0.0",
     "html-webpack-plugin": "^2.28.0",
     "json-loader": "^0.5.4",
+    "nodemon": "^1.18.3",
     "style-loader": "^0.13.1",
     "truffle-contract": "^1.1.11",
     "web3": "^0.20.0",
@@ -35,6 +36,8 @@
     "webpack-dev-server": "^2.3.0"
   },
   "dependencies": {
-    "ipfs-api": "^22.2.4"
+    "express": "^4.16.3",
+    "ipfs-api": "^22.2.4",
+    "mongoose": "^5.2.6"
   }
 }

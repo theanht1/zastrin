@@ -31,7 +31,7 @@ contract Escrow {
         _;
     }
 
-    function escrowInfo() view public returns(address, address, address, bool, uint, uint) {
+    function escrowInfo() public view returns(address, address, address, bool, uint, uint) {
         return (buyer, seller, arbiter, fundsDisbursed, releaseCount, refundCount);
     }
 

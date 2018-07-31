@@ -68,6 +68,28 @@ window.App = {
         $('#msg').html('You have purchased this product successfully!');
       });
     });
+
+    // Handle release
+    $('#release-funds').click(function(event) {
+      const productId = new URLSearchParams(window.location.search).get('id');
+      return EcommerceStore.deployed().then(function(instance) {
+        $('#msg').html('Please waith for transaction completed');
+        return instance.releaseAmountToSeller(productId, { from: web3.eth.accounts[0] })
+          .then(function() { window.location.reload(); })
+          .catch(function(error) { console.log(error); });
+      });
+    });
+
+    // Handle refund
+    $('#refund-funds').click(function(event) {
+      const productId = new URLSearchParams(window.location.search).get('id');
+      return EcommerceStore.deployed().then(function(instance) {
+        $('#msg').html('Please waith for transaction completed');
+        return instance.refundAmountToBuyer(productId, { from: web3.eth.accounts[0] })
+          .then(function() { window.location.reload(); })
+          .catch(function(error) { console.log(error); });
+      });
+    });
   }
 };
 
@@ -85,6 +107,18 @@ function renderProductDetail(productId) {
         const content = file.toString();
         $('#product-desc').append('<div>' + content + '</div>');
       });
+      if (product[8] === '0x0000000000000000000000000000000000000000') {
+        $('#escrow-info').hide();
+      } else {
+        $('#buy-now').hide();
+        instance.escrowInfo(productId).then(function(escrow) {
+          $('#buyer').html(escrow[0]);
+          $('#seller').html(escrow[1]);
+          $('#arbiter').html(escrow[2]);
+          $('#release-count').html(escrow[4].toNumber());
+          $('#refund-count').html(escrow[5].toNumber());
+        });
+      }
     });
   });
 }
@@ -114,33 +148,56 @@ async function saveProduct(params) {
 /* Index page's functions */
 // Get products
 function renderStore() {
-  let instance;
-  return EcommerceStore.deployed().then(function(i) {
-    instance = i;
-    return instance.productIndex.call();
-  }).then(function(productIndex) {
-    for (let index = 0; index < productIndex; index++) {
-      renderProduct(instance, index + 1);
-    }
+  // let instance;
+  // return EcommerceStore.deployed().then(function(i) {
+  //   instance = i;
+  //   return instance.productIndex.call();
+  // }).then(function(productIndex) {
+  //   for (let index = 0; index < productIndex; index++) {
+  //     renderProduct(instance, index + 1);
+  //   }
+  // });
+  $.ajax({
+    url: 'http://localhost:3000/products',
+    type: 'GET',
+    contentType: 'application/json; charset=utf-8',
+  }).done(function(data) {
+    data.forEach(function(product) {
+      renderProduct(product);
+    })
   });
 }
 
 // Render product to UI
-function renderProduct(instance, index) {
-  return instance.getProduct.call(index).then(function(product) {
-    const node = $('<div />');
-    node.addClass('col-sm-3 text-center col-margin-bottom-1 product');
-    node.append('<img src="http://localhost:9001/ipfs/' + product[3] + '" />');
-    node.append('<div class="title">' + product[1] + '</div>');
-    node.append('<div> Price: ' + displayPrice(product[6]) + '</div>');
-    node.append('<a href="product.html?id=' + product[0] + '">Details</a>');
-    if (product[8] === '0x0000000000000000000000000000000000000000') {
-      $('#product-list').append(node);
-    } else {
-      $('#product-purchased').append(node);
-    }
-  });
+// function renderProduct(instance, index) {
+//   return instance.getProduct.call(index).then(function(product) {
+//     const node = $('<div />');
+//     node.addClass('col-sm-3 text-center col-margin-bottom-1 product');
+//     node.append('<img src="http://localhost:9001/ipfs/' + product[3] + '" />');
+//     node.append('<div class="title">' + product[1] + '</div>');
+//     node.append('<div> Price: ' + displayPrice(product[6]) + '</div>');
+//     node.append('<a href="product.html?id=' + product[0] + '">Details</a>');
+//     if (product[8] === '0x0000000000000000000000000000000000000000') {
+//       $('#product-list').append(node);
+//     } else {
+//       $('#product-purchased').append(node);
+//     }
+//   });
+// }
+function renderProduct(product) {
+  const node = $('<div />');
+  node.addClass('col-sm-3 text-center col-margin-bottom-1 product');
+  node.append('<img src="http://localhost:9001/ipfs/' + product.ipfsImageHash+ '" />');
+  node.append('<div class="title">' + product.name + '</div>');
+  node.append('<div> Price: ' + displayPrice(product.price) + '</div>');
+  node.append('<a href="product.html?id=' + product.blockchainId + '">Details</a>');
+  if (product[8] === '0x0000000000000000000000000000000000000000') {
+    $('#product-list').append(node);
+  } else {
+    $('#product-purchased').append(node);
+  }
 }
+
 /* End index page's functions */
 
 function saveTextBlobOnIpfs(blob) {

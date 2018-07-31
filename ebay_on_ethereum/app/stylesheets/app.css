@@ -54,6 +54,7 @@ a {
 }
 
 #product-list img,
+#product-purchased img,
 #product-reveal-list img,
 #product-finalize-list img {
     width: 150px;
