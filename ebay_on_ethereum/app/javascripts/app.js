@@ -81,10 +81,10 @@ function renderProductDetail(productId) {
       $('#product-price').html(displayPrice(product[6]));
       $('#product-id').val(product[0]);
       $('#buy-now-price').val(product[6]);
-      ipfs.cat(product[4]).then(function (file) {
+      ipfs.cat(product[4]).then(function(file) {
         const content = file.toString();
         $('#product-desc').append('<div>' + content + '</div>');
-      })
+      });
     });
   });
 }
