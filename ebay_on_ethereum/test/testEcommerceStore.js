@@ -54,22 +54,35 @@ contract('EcommerceStore', (accounts) => {
   });
 
   it('should be voted', async () => {
-    await instance.releaseAmountToSeller(1, { from: SELLER});
-    let escrow = await instance.escrowInfo(1);
+    await instance.releaseAmountToSeller(1, { from: SELLER });
+    const escrow = await instance.escrowInfo(1);
     assert.equal(escrow[3], false);
     assert.equal(escrow[4], 1);
     assert.equal(escrow[5], 0);
+  });
 
-    await instance.refundAmountToBuyer(1, { from: BUYER });
-    escrow = await instance.escrowInfo(1);
-    assert.equal(escrow[3], false);
-    assert.equal(escrow[4], 1);
-    assert.equal(escrow[5], 1);
-
-    await instance.refundAmountToBuyer(1, { from: ARBITER });
-    escrow = await instance.escrowInfo(1);
+  it('should release to seller', async () => {
+    await instance.releaseAmountToSeller(1, { from: BUYER });
+    const escrow = await instance.escrowInfo(1);
     assert.equal(escrow[3], true);
-    assert.equal(escrow[4], 1);
+    assert.equal(escrow[4], 2);
+    assert.equal(escrow[5], 0);
+  });
+
+  it('should refund to buyer', async () => {
+    // Create new product
+    await instance.addProductToStore(
+      PRODUCT.name, PRODUCT.category, PRODUCT.imageLink, PRODUCT.descLink,
+      PRODUCT.startTime, PRODUCT.price, PRODUCT.productCondition,
+      { from: SELLER }
+    );
+    await instance.buy(2, { from: BUYER, value: PRODUCT.price });
+
+    await instance.refundAmountToBuyer(2, { from: BUYER });
+    await instance.refundAmountToBuyer(2, { from: ARBITER });
+    escrow = await instance.escrowInfo(2);
+    assert.equal(escrow[3], true);
+    assert.equal(escrow[4], 0);
     assert.equal(escrow[5], 2);
   });
 });
