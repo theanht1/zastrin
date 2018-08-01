@@ -30,6 +30,8 @@ contract EcommerceStore {
         uint startTime, uint price, uint condition
     );
 
+    event BuyProduct(uint id, address buyer);
+
     constructor(address _arbiter) public {
         productIndex = 0;
         arbiter = _arbiter;
@@ -48,7 +50,7 @@ contract EcommerceStore {
         );
         stores[msg.sender][productIndex] = product;
         productIdInStore[productIndex] = msg.sender;
-        emit NewProduct(
+        NewProduct(
             productIndex, _name, _category, _imageLink, _descLink,
             _startTime, _price, _productCondition
         );
@@ -80,6 +82,7 @@ contract EcommerceStore {
             productIdInStore[_productId], arbiter
         );
         productToEscrow[_productId] = escrow;
+        BuyProduct(_productId, msg.sender);
     }
 
     function escrowInfo(uint _productId) public view returns(address, address, address, bool, uint, uint) {

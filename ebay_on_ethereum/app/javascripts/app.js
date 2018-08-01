@@ -61,7 +61,6 @@ window.App = {
         return instance.buy(productId, {
           from: web3.eth.accounts[0],
           value: amount,
-          gas: 470000
         });
       }).then(function() {
         $('#msg').show();
@@ -138,7 +137,7 @@ async function saveProduct(params) {
     Date.parse(params['product-start-time']) / 1000,
     web3.toWei(params['product-price'], 'ether'),
     params['product-condition'],
-    { from: web3.eth.accounts[0], gas: 4700000 },
+    { from: web3.eth.accounts[0] },
   ).then(function(result) {
     window.alert('You have added new product successfully');
   });
@@ -191,7 +190,7 @@ function renderProduct(product) {
   node.append('<div class="title">' + product.name + '</div>');
   node.append('<div> Price: ' + displayPrice(product.price) + '</div>');
   node.append('<a href="product.html?id=' + product.blockchainId + '">Details</a>');
-  if (product[8] === '0x0000000000000000000000000000000000000000') {
+  if (product.buyer === '0x0000000000000000000000000000000000000000') {
     $('#product-list').append(node);
   } else {
     $('#product-purchased').append(node);

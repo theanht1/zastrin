@@ -54,6 +54,16 @@ function setupProductEventListener() {
       }
       saveProduct(result.args);
     });
+
+    const buyEvent = instance.BuyProduct({ fromBlock: 0, toBlock: 'latest' });
+    buyEvent.watch(function(err, result) {
+      if (err) {
+        console.log(err);
+        return;
+      }
+      console.log(result.args)
+      updateProduct(result.args);
+    });
   });
 }
 
@@ -70,7 +80,8 @@ function saveProduct(product) {
       ipfsDescHash: product.descLink,
       startTime: product.startTime,
       price: product.price,
-      condition: product.condition
+      condition: product.condition,
+      buyer: '0x0000000000000000000000000000000000000000'
     });
 
     newProduct.save(function(saveProductErr) {
@@ -80,4 +91,18 @@ function saveProduct(product) {
       }
     });
   });
+}
+
+function updateProduct(product) {
+  ProductModel.findOneAndUpdate(
+    { 'blockchainId': product.id.toNumber() },
+    { $set: { buyer: product.buyer } },
+    { new: true },
+    (err, dbProduct) => {
+      if (err) {
+        console.log(err);
+        return;
+      }
+    }
+  );
 }

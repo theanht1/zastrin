@@ -31,6 +31,10 @@ npm install
 ganache-cli -d
 
 # In another termial
+# Start node server
+npm run server
+
+# In another termial
 # Migrate contract
 truffle migrate
 

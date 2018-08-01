@@ -6,6 +6,7 @@
     "lint": "eslint ./",
     "build": "webpack",
     "dev": "webpack-dev-server",
+    "server": "./node_modules/.bin/nodemon server.js",
     "coverage": "./node_modules/.bin/solidity-coverage"
   },
   "author": "Douglas von Kohorn",
